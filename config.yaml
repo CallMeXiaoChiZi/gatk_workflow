@@ -23,10 +23,10 @@ __SHARED__:
     dbsnp: 'path to the vcf file of dbsnp138'
     memory: '5G'
 __SAMPLES__:
-    sample_name:
-        fastq_file_1: 'path to the forward fastq file'
-        fastq_file_2: 'path to the reverse fastq file'
-        sample_id: 'sample_name'
+#    sample_name:
+#        fastq_file_1: 'path to the forward fastq file'
+#        fastq_file_2: 'path to the reverse fastq file'
+#        sample_id: 'sample_name'
 __TASK_1__:
     reserved:
         # do not change this section
