@@ -1,0 +1,2 @@
+#sample_id	fastq_file_1	fastq_file_2
+<some_ID>	<path to the forward fastq file>	<path to the reverse fastq file>

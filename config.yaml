@@ -1,0 +1,295 @@
+__PIPELINE_INFO__:
+    name: gatk_pipeline
+    version: '1.0'
+    author: 'Rad'
+    data_type: null
+    input_type: 'fastq'
+    output_type: 'bam, tsv, vcf'
+    host_cluster: 'genesis'
+    date_created: 'Mar 31, 2015'
+    date_last_updated: 'Mar 31, 2015'
+    factory_version: '1.10.3'
+__GENERAL__:
+    python: 'path to python binary'
+    java: 'path to java 1.7 binary'
+    bowtie2: 'path to bowtie2 binary'
+    gatk: 'path to GATK v 3.1.1 binary'
+    picard: 'path to picard tool AddOrReplaceReadGroups binary'
+    samtools: 'path to samtools v1.2 binary'
+    R: null
+__SHARED__:
+    ref_genome: 'path to the root directory of the reference genome'
+    ref_genome_fa: 'path to the fasta file of the reference genome'
+    dbsnp: 'path to the vcf file of dbsnp138'
+    memory: '5G'
+__SAMPLES__:
+    sample_name:
+        fastq_file_1: 'path to the forward fastq file'
+        fastq_file_2: 'path to the reverse fastq file'
+        sample_id: 'sample_name'
+__TASK_1__:
+    reserved:
+        # do not change this section
+        component_name: 'run_bowtie2'
+        component_version: '1.0.0'
+        seed_version: '1.0.0'
+    run:
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+        parallel_run: False
+        parallel_params: []
+        interval_file: null
+    component:
+        input_files:
+            seq2: ('__SAMPLES__','fastq_file_2')
+            seq1: ('__SAMPLES__','fastq_file_1')
+            reference: ('__SHARED__','ref_genome')
+        output_files:
+            outfile: 'alignment/${sample_id}.bam'
+        parameters:
+__TASK_2__:
+    reserved:
+        # do not change this section
+        component_name: 'reheader'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            infile: ('__TASK_1__','outfile')
+        output_files:
+            outfile: 'reheaded/${sample_id}.bam'
+        parameters:
+__TASK_3__:
+    reserved:
+        # do not change this section
+        component_name: 'sort_alignments'
+        component_version: '1.0.0'
+        seed_version: '0.1.19'
+    run:
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+        parallel_run: False
+        parallel_params: []
+        interval_file: null
+    component:
+        input_files:
+            unsorted_bam: ('__TASK_2__','outfile')
+            sorted_bam_prefix: '.sorted'
+        output_files:
+            sorted_bam: 'reheaded/${sample_id}.sorted.bam'
+        parameters:
+__TASK_4__:
+    reserved:
+        # do not change this section
+        component_name: 'index_alignments'
+        component_version: '1.0.0'
+        seed_version: '0.1.19'
+    run:
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+        parallel_run: False
+        parallel_params: []
+        interval_file: null
+    component:
+        input_files:
+            sorted_bam: ('__TASK_3__','sorted_bam')
+        output_files:
+            indexed_bam: 'reheaded/${sample_id}.sorted.bam.bai'
+        parameters:
+__TASK_5__:
+    reserved:
+        # do not change this section
+        component_name: 'create_targets'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            indexed_bam: ('__TASK_4__','indexed_bam')
+            ref_genome: ('__SHARED__','ref_genome_fa')
+            infile: ('__TASK_3__','sorted_bam')
+        output_files:
+            outfile: 'intervals/${sample_id}_positions.intervals'
+        parameters:
+__TASK_6__:
+    reserved:
+        # do not change this section
+        component_name: 'realign'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            sorted_alignment: ('__TASK_3__','sorted_bam')
+            ref_genome: ('__SHARED__','ref_genome_fa')
+            infile: ('__TASK_5__','outfile')
+        output_files:
+            outfile: 'realignment/${sample_id}_realigned.bam'
+        parameters:
+__TASK_7__:
+    reserved:
+        # do not change this section
+        component_name: 'base_quality_recalibrator_pre'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            dbsnp: ('__SHARED__','dbsnp')
+            ref_genome: ('__SHARED__','ref_genome_fa')
+            infile: ('__TASK_6__','outfile')
+        output_files:
+            outfile: 'realignment/${sample_id}_score.grp'
+        parameters:
+__TASK_8__:
+    reserved:
+        # do not change this section
+        component_name: 'base_quality_recalibrator_post'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            dbsnp: ('__SHARED__','dbsnp')
+            ref_genome: ('__SHARED__','ref_genome_fa')
+            bqsr: ('__TASK_7__','outfile')
+            infile: ('__TASK_6__','outfile')
+        output_files:
+            outfile: 'realignment/${sample_id}_score.grp2'
+        parameters:
+__TASK_9__:
+    reserved:
+        # do not change this section
+        component_name: 'print_reads'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            ref_genome: ('__SHARED__','ref_genome_fa')
+            bqsr: ('__TASK_7__','outfile')
+            infile: ('__TASK_6__','outfile')
+        output_files:
+            outfile: 'realignment/${sample_id}_recalibrated.bam'
+        parameters:
+__TASK_10__:
+    reserved:
+        # do not change this section
+        component_name: 'sort_alignments'
+        component_version: '1.0.0'
+        seed_version: '0.1.19'
+    run:
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+        parallel_run: False
+        parallel_params: []
+        interval_file: null
+    component:
+        input_files:
+            unsorted_bam: ('__TASK_9__','outfile')
+            sorted_bam_prefix: '.sorted'
+        output_files:
+            sorted_bam: 'realignment/${sample_id}_recalibrated.sorted.bam'
+        parameters:
+__TASK_11__:
+    reserved:
+        # do not change this section
+        component_name: 'index_alignments'
+        component_version: '1.0.0'
+        seed_version: '0.1.19'
+    run:
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: []
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+        parallel_run: False
+        parallel_params: []
+        interval_file: null
+    component:
+        input_files:
+            sorted_bam: ('__TASK_10__','sorted_bam')
+        output_files:
+            indexed_bam: 'realignment/${sample_id}_recalibrated.sorted.bam.bai'
+        parameters:
+__TASK_12__:
+    reserved:
+        # do not change this section
+        component_name: 'call_variants_haplotypecaller'
+        component_version: '1.0.0'
+        seed_version: '3.1.1'
+    run:
+        # NOTE: component cannot run in parallel mode.
+        use_cluster: True
+        memory: ('__SHARED__', 'memory')
+        forced_dependencies: ['__TASK_11__']
+        add_breakpoint: False
+        env_vars:
+        boilerplate: null
+    component:
+        input_files:
+            ref_genome: ('__SHARED__','ref_genome_fa')
+            infile: ('__TASK_10__','sorted_bam')
+        output_files:
+            outfile: 'calls/${sample_id}_call.vcf'
+        parameters:

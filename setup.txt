@@ -1,0 +1,12 @@
+#section	key	value
+__GENERAL__	samtools	path to samtools v1.2 binary
+__GENERAL__	R	path to R, e.g. R
+__GENERAL__	java	path to java 1.7 binary
+__GENERAL__	gatk	path to GATK v 3.1.1 binary
+__GENERAL__	python	path to python binary
+__GENERAL__	picard	path to picard tool AddOrReplaceReadGroups binary
+__GENERAL__	bowtie2	path to bowtie2 binary
+__SHARED__	ref_genome_fa	path to the fasta file of the reference genome
+__SHARED__	ref_genome	path to the root directory of the reference genome
+__SHARED__	dbsnp	path to the vcf file of dbsnp138
+__SHARED__	memory	5G
