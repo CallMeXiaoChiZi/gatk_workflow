@@ -8,7 +8,7 @@ __PIPELINE_INFO__:
     host_cluster: 'genesis'
     date_created: 'Mar 31, 2015'
     date_last_updated: 'Mar 31, 2015'
-    factory_version: '1.10.3'
+    kronos_version: '2.0.4'
 __GENERAL__:
     python: 'path to python binary'
     java: 'path to java 1.7 binary'
